@@ -1,0 +1,29 @@
+{
+    "version": 2,
+    "name": "connect-four-ai-frontend",
+    "builds": [
+        {
+            "src": "package.json",
+            "use": "@vercel/static-build",
+            "config": {
+                "distDir": "build"
+            }
+        }
+    ],
+    "routes": [
+        {
+            "src": "/static/(.*)",
+            "dest": "/static/$1"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "/index.html"
+        }
+    ],
+    "env": {
+        "REACT_APP_API_URL": "https://connect-four-ai-roge.onrender.com",
+        "REACT_APP_WS_URL": "https://connect-four-ai-roge.onrender.com",
+        "REACT_APP_ML_SERVICE_URL": "https://connect-four-ai-roge.onrender.com",
+        "REACT_APP_ENVIRONMENT": "production"
+    }
+}

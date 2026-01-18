@@ -1,0 +1,35 @@
+# Production Requirements for ML Services
+# Core dependencies
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+gunicorn>=23.0.0
+pydantic==2.4.2
+python-multipart>=0.0.20
+
+# ML dependencies - using CPU-only version for Render free tier
+--index-url https://download.pytorch.org/whl/cpu
+torch==2.5.1+cpu
+numpy==1.24.3
+scikit-learn>=1.6.0
+transformers>=4.48.0
+
+# WebSocket support for real-time services
+websockets==12.0
+python-socketio[asyncio]>=5.12.0
+aiohttp>=3.11.10
+
+# Async and performance
+aiofiles==23.2.1
+asyncio==3.4.3
+
+# Environment and configuration
+python-dotenv==1.0.0
+requests==2.31.0
+
+# Monitoring and logging
+prometheus-client==0.19.0
+python-json-logger==2.0.7
+structlog==23.2.0
+
+# CORS support
+fastapi-cors==0.0.6

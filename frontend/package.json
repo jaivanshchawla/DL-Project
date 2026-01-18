@@ -1,0 +1,50 @@
+{
+  "name": "connect-four-frontend",
+  "version": "1.0.0",
+  "_comment": "Force rebuild: updated backend URL",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "build:check": "echo 'Frontend build check - ready for development'",
+    "test": "react-scripts test"
+  },
+  "dependencies": {
+    "@kurkle/color": "^0.4.0",
+    "@vercel/speed-insights": "^1.2.0",
+    "ansi-html-community": "^0.0.8",
+    "chart.js": "^4.5.0",
+    "core-js-pure": "^3.44.0",
+    "events": "^3.3.0",
+    "fireworks-js": "^2.10.8",
+    "framer-motion": "^12.23.6",
+    "html-entities": "^2.6.0",
+    "react": "^18.0.0",
+    "react-chartjs-2": "^5.3.0",
+    "react-dom": "^18.0.0",
+    "react-scripts": "^5.0.1",
+    "recharts": "^2.15.4",
+    "socket.io-client": "^4.8.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.0.15",
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.1",
+    "@types/socket.io-client": "^1.4.36",
+    "ajv": "^8.17.1",
+    "typescript": "^4.9.0"
+  },
+  "proxy": "http://localhost:3000",
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
