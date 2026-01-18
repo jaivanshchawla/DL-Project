@@ -283,7 +283,7 @@ jobs:
 
       - name: Create failure issue
         if: github.event_name != 'pull_request'
-        uses: actions/github-script@v6
+        uses: actions/github-script@v8
         with:
           script: |
             const title = `🚨 Pipeline Failure - ${new Date().toISOString().split('T')[0]}`;
