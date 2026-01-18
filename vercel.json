@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm --prefix frontend run build",
+  "buildCommand": "npm install --prefix frontend && npm --prefix frontend run build",
   "outputDirectory": "frontend/build",
   "devCommand": "npm --prefix frontend start",
   "cleanUrls": true,
