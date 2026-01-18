@@ -31,7 +31,7 @@ const Footer: React.FC = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.8, duration: 0.6 }}
           >
-            Developed by
+            Built with ❤️ by
           </motion.h3>
           
           {/* Name with special animation */}
@@ -48,7 +48,7 @@ const Footer: React.FC = () => {
               textShadow: "0 0 20px rgba(34, 211, 238, 0.4)",
             }}
           >
-            Derek J. Russell
+            Jaivansh Chawla
           </motion.a>
           
           {/* Animated AI brain */}
@@ -60,7 +60,7 @@ const Footer: React.FC = () => {
             }}
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
           >
-            🧠
+            🦁
           </motion.div>
         </motion.div>
         
