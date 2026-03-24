@@ -1,5 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { HoverCard, Portal } from '@ark-ui/react';
+import './FooterHoverCard.css';
 
 const Footer: React.FC = () => {
   return (
@@ -34,22 +36,69 @@ const Footer: React.FC = () => {
             Built with ❤️ by
           </motion.h3>
           
-          {/* Name with special animation */}
-          <motion.a
-            href="https://www.linkedin.com/in/derek-j-russell/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent cursor-pointer no-underline"
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 1, duration: 0.5, type: "spring" }}
-            whileHover={{ 
-              scale: 1.1,
-              textShadow: "0 0 20px rgba(34, 211, 238, 0.4)",
-            }}
-          >
-            Jaivansh Chawla
-          </motion.a>
+          {/* Name with profile hover card */}
+          <HoverCard.Root openDelay={120} closeDelay={150} positioning={{ placement: 'top', gutter: 16 }}>
+            <HoverCard.Trigger asChild>
+              <motion.button
+                type="button"
+                className="footer-profile-trigger text-xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent cursor-pointer no-underline"
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 1, duration: 0.5, type: "spring" }}
+                whileHover={{
+                  scale: 1.08,
+                  textShadow: "0 0 20px rgba(34, 211, 238, 0.4)",
+                }}
+              >
+                Jaivansh Chawla
+              </motion.button>
+            </HoverCard.Trigger>
+            <Portal>
+              <HoverCard.Positioner>
+                <HoverCard.Content className="footer-hover-card">
+                  <HoverCard.Arrow className="footer-hover-card-arrow">
+                    <HoverCard.ArrowTip className="footer-hover-card-arrow-tip" />
+                  </HoverCard.Arrow>
+                  <div className="footer-hover-card-inner">
+                    <div className="footer-hover-card-header">
+                      <div className="footer-hover-card-avatar">JC</div>
+                      <div className="footer-hover-card-heading">
+                        <span className="footer-hover-card-badge">Project Owner</span>
+                        <h4>Jaivansh Chawla</h4>
+                        <p>Building Connect Four AI</p>
+                      </div>
+                    </div>
+
+                    <p className="footer-hover-card-bio">
+                      Driving the frontend polish, backend service integration, and gameplay tuning behind this project.
+                    </p>
+
+                    <div className="footer-hover-card-stats">
+                      <div className="footer-hover-card-stat">
+                        <span className="footer-hover-card-stat-value">UI</span>
+                        <span className="footer-hover-card-stat-label">Product polish</span>
+                      </div>
+                      <div className="footer-hover-card-stat">
+                        <span className="footer-hover-card-stat-value">API</span>
+                        <span className="footer-hover-card-stat-label">Service wiring</span>
+                      </div>
+                      <div className="footer-hover-card-stat">
+                        <span className="footer-hover-card-stat-value">AI</span>
+                        <span className="footer-hover-card-stat-label">Gameplay tuning</span>
+                      </div>
+                    </div>
+
+                    <div className="footer-hover-card-tags">
+                      <span>React</span>
+                      <span>Render</span>
+                      <span>Vercel</span>
+                      <span>Connect Four</span>
+                    </div>
+                  </div>
+                </HoverCard.Content>
+              </HoverCard.Positioner>
+            </Portal>
+          </HoverCard.Root>
           
           {/* Animated AI brain */}
           <motion.div
