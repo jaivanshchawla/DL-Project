@@ -182,6 +182,8 @@ const LandingPage: React.FC<LandingPageProps> = ({
           variant="dark"
           title="Disc Setup"
           description="Pick your disc color and the AI disc color before the game begins."
+          collapsible={true}
+          defaultExpanded={false}
         />
       </motion.div>
 

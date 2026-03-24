@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   DISC_COLOR_OPTIONS,
   buildDiscGradient,
@@ -14,6 +14,8 @@ interface DiscColorSelectorProps {
   variant?: 'dark' | 'light';
   title?: string;
   description?: string;
+  collapsible?: boolean;
+  defaultExpanded?: boolean;
 }
 
 const DiscColorSelector: React.FC<DiscColorSelectorProps> = ({
@@ -21,11 +23,14 @@ const DiscColorSelector: React.FC<DiscColorSelectorProps> = ({
   onChange,
   variant = 'dark',
   title = 'Disc Colors',
-  description = 'Choose your disc and the AI disc. Picking the same color swaps the two.'
+  description = 'Choose your disc and the AI disc. Picking the same color swaps the two.',
+  collapsible = false,
+  defaultExpanded = true
 }) => {
   const normalized = normalizeDiscColorSelection(selection);
   const playerDisc = getDiscColorOption(normalized.player);
   const aiDisc = getDiscColorOption(normalized.ai);
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
   const surface =
     variant === 'dark'
@@ -58,6 +63,8 @@ const DiscColorSelector: React.FC<DiscColorSelectorProps> = ({
 
     onChange(normalizeDiscColorSelection(nextSelection));
   };
+
+  const showExpandedContent = !collapsible || isExpanded;
 
   const renderColorRow = (target: 'player' | 'ai', activeColor: DiscColorId) => (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10 }}>
@@ -132,6 +139,80 @@ const DiscColorSelector: React.FC<DiscColorSelectorProps> = ({
         </div>
       </div>
 
+      {collapsible && (
+        <button
+          type="button"
+          onClick={() => setIsExpanded(prev => !prev)}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 16,
+            border: `1px solid ${surface.border}`,
+            background: variant === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(248, 250, 252, 0.95)',
+            borderRadius: 18,
+            padding: '14px 16px',
+            color: surface.text,
+            cursor: 'pointer',
+            marginBottom: showExpandedContent ? 18 : 0,
+            boxShadow: showExpandedContent ? 'none' : `0 16px 36px ${variant === 'dark' ? 'rgba(15, 23, 42, 0.22)' : 'rgba(59, 130, 246, 0.10)'}`
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span
+                style={{
+                  width: 18,
+                  height: 18,
+                  borderRadius: '50%',
+                  background: buildDiscGradient(playerDisc),
+                  boxShadow: `0 10px 24px ${playerDisc.glow}`
+                }}
+              />
+              <span style={{ fontSize: 13, fontWeight: 800, color: surface.text }}>You</span>
+              <span style={{ fontSize: 13, color: playerDisc.base, fontWeight: 700 }}>{playerDisc.name}</span>
+            </div>
+            <div style={{ width: 1, height: 18, background: surface.border }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span
+                style={{
+                  width: 18,
+                  height: 18,
+                  borderRadius: '50%',
+                  background: buildDiscGradient(aiDisc),
+                  boxShadow: `0 10px 24px ${aiDisc.glow}`
+                }}
+              />
+              <span style={{ fontSize: 13, fontWeight: 800, color: surface.text }}>AI</span>
+              <span style={{ fontSize: 13, color: aiDisc.base, fontWeight: 700 }}>{aiDisc.name}</span>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+            <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: 0.5, color: surface.muted }}>
+              {showExpandedContent ? 'Hide Options' : 'Customize'}
+            </span>
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 28,
+                height: 28,
+                borderRadius: '50%',
+                border: `1px solid ${surface.border}`,
+                background: surface.chip,
+                transform: showExpandedContent ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.18s ease'
+              }}
+            >
+              ˅
+            </span>
+          </div>
+        </button>
+      )}
+
+      {showExpandedContent && (
       <div style={{ display: 'grid', gap: 18 }}>
         <div
           style={{
@@ -185,6 +266,7 @@ const DiscColorSelector: React.FC<DiscColorSelectorProps> = ({
           {renderColorRow('ai', normalized.ai)}
         </div>
       </div>
+      )}
     </div>
   );
 };
