@@ -95,7 +95,7 @@ class EnhancedSocketManager {
   // Validate server connection health
   private async validateConnection(): Promise<boolean> {
     try {
-      const timeoutMs = environmentDetector.getEnvironmentInfo().isProduction ? 12000 : 10000;
+      const timeoutMs = environmentDetector.getEnvironmentInfo().isProduction ? 20000 : 10000;
       const healthEndpoint = buildApiEndpoint('/health');
       const response = await fetch(healthEndpoint, {
         method: 'GET',
@@ -382,6 +382,7 @@ class EnhancedSocketManager {
 
       // Log to integration logger
       integrationLogger.logServiceConnection('Backend API', true, connectionDetails);
+      integrationLogger.logServiceConnection('Game WebSocket', true, connectionDetails);
 
       // Send connection analytics
       this.socket!.emit('connection:analytics', {
@@ -445,6 +446,12 @@ class EnhancedSocketManager {
       
       // Log to integration logger with analysis
       integrationLogger.logServiceConnection('Backend API', false, { 
+        reason,
+        analysis: disconnectAnalysis,
+        sessionDuration,
+        messagesExchanged: this.metrics.messagesSent + this.metrics.messagesReceived
+      });
+      integrationLogger.logServiceConnection('Game WebSocket', false, {
         reason,
         analysis: disconnectAnalysis,
         sessionDuration,

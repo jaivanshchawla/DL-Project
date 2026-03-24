@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useTransition, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { appConfig, buildApiEndpoint } from '../../config/environment';
+import { environmentDetector } from '../../utils/environmentDetector';
 import './ConnectFourLoading.css';
 
 interface RealLoadingStep {
@@ -172,12 +173,13 @@ const RealTimeConnectFourLoading: React.FC<RealTimeConnectFourLoadingProps> = ({
                 (async () => {
                     console.log('🔍 Health check starting for:', endpoint);
                     try {
+                        const timeoutMs = environmentDetector.getEnvironmentInfo().isProduction ? 20000 : 5000;
                         // Use AbortController for proper timeout handling
                         const controller = new AbortController();
                         const timeoutId = setTimeout(() => {
                             console.log('⏰ Health check timeout for:', endpoint);
-                            controller.abort();
-                        }, 5000); // 5 second timeout
+                            controller.abort(new DOMException(`Health check timeout after ${Math.round(timeoutMs / 1000)}s`, 'TimeoutError'));
+                        }, timeoutMs);
 
                         console.log('📡 Making fetch request to:', endpoint);
                         const response = await fetch(endpoint, {
@@ -233,7 +235,10 @@ const RealTimeConnectFourLoading: React.FC<RealTimeConnectFourLoadingProps> = ({
                         console.log(`🏥 Checking ${name} endpoint:`, url);
                         try {
                             const controller = new AbortController();
-                            const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+                            const timeoutMs = environmentDetector.getEnvironmentInfo().isProduction ? 10000 : 3000;
+                            const timeoutId = setTimeout(() => {
+                                controller.abort(new DOMException(`Service check timeout after ${Math.round(timeoutMs / 1000)}s`, 'TimeoutError'));
+                            }, timeoutMs);
 
                             const response = await fetch(url, {
                                 method: 'GET',
@@ -354,7 +359,8 @@ const RealTimeConnectFourLoading: React.FC<RealTimeConnectFourLoadingProps> = ({
 
                 let backendReady = false;
                 let attempts = 0;
-                const maxAttempts = 30; // 30 seconds max
+                const isProduction = environmentDetector.getEnvironmentInfo().isProduction;
+                const maxAttempts = isProduction ? 4 : 30;
 
                 while (!backendReady && attempts < maxAttempts) {
                     setConnectionAttempts(attempts + 1);
@@ -384,7 +390,12 @@ const RealTimeConnectFourLoading: React.FC<RealTimeConnectFourLoadingProps> = ({
                     }
 
                     attempts++;
-                    await new Promise(resolve => setTimeout(resolve, 300)); // Check more frequently
+                    if (attempts < maxAttempts) {
+                        const retryDelayMs = isProduction
+                            ? Math.min(2000 * attempts, 6000)
+                            : 300;
+                        await new Promise(resolve => setTimeout(resolve, retryDelayMs));
+                    }
                 }
 
                 if (!backendReady) {
@@ -432,7 +443,9 @@ const RealTimeConnectFourLoading: React.FC<RealTimeConnectFourLoadingProps> = ({
 
                 if (soundEnabled) playConnectFourSound(659, 0.2);
 
-                const serviceResults = await checkServiceEndpoints();
+                const serviceResults = backendReady
+                    ? { health: true }
+                    : await checkServiceEndpoints();
                 const serviceNames = Object.keys(serviceResults);
 
                 for (let i = 0; i < serviceNames.length; i++) {
@@ -496,7 +509,7 @@ const RealTimeConnectFourLoading: React.FC<RealTimeConnectFourLoadingProps> = ({
 
                 if (soundEnabled) playConnectFourSound(784, 0.2);
 
-                const finalHealth = await checkBackendHealth(buildApiEndpoint('/health'));
+                const finalHealth = backendReady || serviceResults.health || await checkBackendHealth(buildApiEndpoint('/health'));
 
                 for (let progress = 0; progress <= 100; progress += 33) {
                     setSteps(prev => prev.map((s, i) =>

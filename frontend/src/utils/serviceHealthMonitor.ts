@@ -16,6 +16,7 @@ interface ServiceEndpoint {
 class ServiceHealthMonitor {
   private services: ServiceEndpoint[] = [];
   private environmentInfo = environmentDetector.getEnvironmentInfo();
+  private deploymentMode = process.env.REACT_APP_DEPLOYMENT_MODE || 'full';
 
   constructor() {
     this.initializeServices();
@@ -24,11 +25,12 @@ class ServiceHealthMonitor {
   private getHealthTimeoutMs(): number {
     try {
       const env = this.environmentInfo;
-      // Reduced timeouts to prevent UI blocking
-      // ML services often fail in production, so use shorter timeout
-      return env.isProduction ? 3000 : 5000;
+      if (env.isProduction) {
+        return this.deploymentMode === 'backend_only' ? 20000 : 10000;
+      }
+      return 5000;
     } catch {
-      return 3000;
+      return 5000;
     }
   }
 
@@ -73,6 +75,7 @@ class ServiceHealthMonitor {
       clearTimeout(timeoutId);
       const responseTime = Date.now() - startTime;
 
+      const previousStatus = service.lastStatus;
       const isHealthy = response.ok;
       service.lastCheck = new Date();
       service.lastStatus = isHealthy;
@@ -91,7 +94,7 @@ class ServiceHealthMonitor {
       }
 
       // Log connection status change
-      if (service.lastStatus !== isHealthy || service.consecutiveFailures === 1) {
+      if (previousStatus !== isHealthy || service.consecutiveFailures === 1) {
         integrationLogger.logServiceConnection(service.name, isHealthy, {
           responseTime,
           consecutiveFailures: service.consecutiveFailures
@@ -159,14 +162,23 @@ class ServiceHealthMonitor {
 
     console.log(`🚀 Starting service health monitoring in ${this.environmentInfo.type} environment...`);
     this.isMonitoring = true;
+    const initialDelayMs = this.environmentInfo.isProduction ? 15000 : 0;
+    const checkIntervalMs = this.environmentInfo.isProduction ? 60000 : 30000;
 
-    // Initial check
-    this.checkAllServices();
+    if (initialDelayMs > 0) {
+      setTimeout(() => {
+        if (this.isMonitoring) {
+          this.checkAllServices();
+        }
+      }, initialDelayMs);
+    } else {
+      this.checkAllServices();
+    }
 
     // Set up periodic checks
     this.intervalId = setInterval(() => {
       this.checkAllServices();
-    }, 30000); // Check every 30 seconds
+    }, checkIntervalMs);
   }
 
   public stopMonitoring(): void {
