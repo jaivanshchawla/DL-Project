@@ -49,37 +49,37 @@ class EnvironmentDetector {
     },
     mlService: {
       local: 'http://localhost:8000',
-      production: process.env.REACT_APP_ML_SERVICE_URL || 'https://connect-four-ml.onrender.com',
+      production: process.env.REACT_APP_ML_SERVICE_URL || 'https://connect-four-ai-backend.onrender.com',
       development: 'http://localhost:8000',
       staging: 'https://connect-four-ml-staging.onrender.com'
     },
     mlInference: {
       local: 'http://localhost:8001',
-      production: process.env.REACT_APP_ML_INFERENCE_URL || 'https://connect-four-ml.onrender.com/inference',
+      production: process.env.REACT_APP_ML_INFERENCE_URL || 'https://connect-four-ai-backend.onrender.com',
       development: 'http://localhost:8001',
       staging: 'https://connect-four-ml-staging.onrender.com/inference'
     },
     continuousLearning: {
       local: 'http://localhost:8002',
-      production: process.env.REACT_APP_CL_SERVICE_URL || 'https://connect-four-ml.onrender.com/learning',
+      production: process.env.REACT_APP_CL_SERVICE_URL || 'https://connect-four-ai-backend.onrender.com',
       development: 'http://localhost:8002',
       staging: 'https://connect-four-ml-staging.onrender.com/learning'
     },
     aiCoordination: {
       local: 'http://localhost:8003',
-      production: process.env.REACT_APP_AI_COORD_URL || 'https://connect-four-ml.onrender.com/coordination',
+      production: process.env.REACT_APP_AI_COORD_URL || 'https://connect-four-ai-backend.onrender.com',
       development: 'http://localhost:8003',
       staging: 'https://connect-four-ml-staging.onrender.com/coordination'
     },
     pythonTrainer: {
       local: 'http://localhost:8004',
-      production: process.env.REACT_APP_TRAINER_URL || 'https://connect-four-ml.onrender.com/trainer',
+      production: process.env.REACT_APP_TRAINER_URL || 'https://connect-four-ai-backend.onrender.com',
       development: 'http://localhost:8004',
       staging: 'https://connect-four-ml-staging.onrender.com/trainer'
     },
     integrationWebSocket: {
       local: 'ws://localhost:8888',
-      production: process.env.REACT_APP_INTEGRATION_WS_URL || 'wss://connect-four-ai-roge.onrender.com/integration',
+      production: process.env.REACT_APP_INTEGRATION_WS_URL || 'wss://connect-four-ai-backend.onrender.com',
       development: 'ws://localhost:8888',
       staging: 'wss://connect-four-staging.onrender.com/integration'
     }
@@ -226,10 +226,8 @@ class EnvironmentDetector {
 
     // In production, only check main backend health
     if (env.isProduction) {
-      // In production, use same-origin backend to avoid CORS errors
-      const origin = `${env.protocol}//${env.hostname}${env.port ? `:${env.port}` : ''}`;
       return [
-        { name: 'Backend API', url: `${origin}/api/health` }
+        { name: 'Backend API', url: `${config.backend}/api/health` }
       ];
     }
 

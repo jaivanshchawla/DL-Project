@@ -14,19 +14,23 @@ services:
       - key: CORS_ENABLED
         value: "true"
       - key: CORS_ORIGINS
-        value: '["https://connect-four-ai-derek.vercel.app","https://connect-four-ai-roge.vercel.app","https://*.vercel.app","https://*.onrender.com"]'
+        value: 'https://connect-four-ai-frontend.vercel.app,https://*.vercel.app,https://*.onrender.com'
       - key: FRONTEND_URL
-        value: https://connect-four-ai-derek.vercel.app
+        value: https://connect-four-ai-frontend.vercel.app
+      - key: BACKEND_URL
+        value: https://connect-four-ai-backend.onrender.com
       # Disable external services until they're deployed
       - key: DISABLE_EXTERNAL_SERVICES
-        value: "false"
+        value: "true"
       # Update these URLs to point to the actual deployed services
       - key: ML_SERVICE_URL
         value: https://connect-four-ml.onrender.com
       - key: CONTINUOUS_LEARNING_WS_URL
-        value: wss://connect-four-learning.onrender.com
+        value: wss://connect-four-learning.onrender.com/ws
       - key: AI_COORDINATION_WS_URL
-        value: wss://connect-four-coordination.onrender.com
+        value: wss://connect-four-coordination.onrender.com/ws/backend_orchestrator
+      - key: PYTHON_TRAINER_URL
+        value: https://connect-four-trainer.onrender.com
 
   # ML Service (Main ML inference)
   - type: web
@@ -34,16 +38,16 @@ services:
     runtime: python
     rootDir: ml_service
     buildCommand: pip install -r requirements.production.txt
-    startCommand: python ml_service.py
+    startCommand: uvicorn ml_service:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PORT
         value: 8000
       - key: ENVIRONMENT
         value: production
       - key: BACKEND_URL
-        value: https://connect-four-ai-roge.onrender.com
+        value: https://connect-four-ai-backend.onrender.com
       - key: CORS_ORIGINS
-        value: 'https://connect-four-ai-derek.vercel.app,https://connect-four-ai-roge.onrender.com,https://*.vercel.app,https://*.onrender.com'
+        value: 'https://connect-four-ai-frontend.vercel.app,https://connect-four-ai-backend.onrender.com,https://*.vercel.app,https://*.onrender.com'
       - key: PYTHONUNBUFFERED
         value: "1"
 
@@ -53,7 +57,7 @@ services:
     runtime: python
     rootDir: ml_service
     buildCommand: pip install -r requirements.production.txt
-    startCommand: python continuous_learning.py
+    startCommand: uvicorn continuous_learning_service:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PORT
         value: 8002
@@ -62,7 +66,7 @@ services:
       - key: ML_SERVICE_URL
         value: https://connect-four-ml.onrender.com
       - key: BACKEND_URL
-        value: https://connect-four-ai-roge.onrender.com
+        value: https://connect-four-ai-backend.onrender.com
       - key: PYTHONUNBUFFERED
         value: "1"
 
@@ -72,14 +76,14 @@ services:
     runtime: python
     rootDir: ml_service
     buildCommand: pip install -r requirements.production.txt
-    startCommand: python ai_coordination_hub.py
+    startCommand: uvicorn ai_coordination_hub:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PORT
         value: 8003
       - key: ENVIRONMENT
         value: production
       - key: BACKEND_URL
-        value: https://connect-four-ai-roge.onrender.com
+        value: https://connect-four-ai-backend.onrender.com
       - key: ML_SERVICE_URL
         value: https://connect-four-ml.onrender.com
       - key: PYTHONUNBUFFERED
@@ -98,6 +102,6 @@ services:
       - key: ENVIRONMENT
         value: production
       - key: BACKEND_URL
-        value: https://connect-four-ai-roge.onrender.com
+        value: https://connect-four-ai-backend.onrender.com
       - key: PYTHONUNBUFFERED
         value: "1"

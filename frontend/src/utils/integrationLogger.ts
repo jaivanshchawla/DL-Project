@@ -32,6 +32,7 @@ class IntegrationLogger {
   private maxEvents: number = 1000;
   private logToConsole: boolean = true;
   private detailedMode: boolean = true;
+  private deploymentMode: string = process.env.REACT_APP_DEPLOYMENT_MODE || 'full';
   private serviceStatus: ServiceStatus = {
     backend: false,
     ml: false,
@@ -42,6 +43,27 @@ class IntegrationLogger {
     integration: false,
     gameWebsocket: false
   };
+
+  private getVisibleServices(): Array<{ name: string; key: keyof ServiceStatus }> {
+    const allServices = [
+      { name: 'Backend API', key: 'backend' as const },
+      { name: 'ML Service', key: 'ml' as const },
+      { name: 'ML Inference', key: 'inference' as const },
+      { name: 'AI Coordination', key: 'coordination' as const },
+      { name: 'Continuous Learning', key: 'learning' as const },
+      { name: 'Python Trainer', key: 'trainer' as const },
+      { name: 'Integration WebSocket', key: 'integration' as const },
+      { name: 'Game WebSocket', key: 'gameWebsocket' as const }
+    ];
+
+    if (this.deploymentMode === 'backend_only') {
+      return allServices.filter(service =>
+        service.key === 'backend' || service.key === 'gameWebsocket'
+      );
+    }
+
+    return allServices;
+  }
 
   constructor() {
     // Create custom console styling
@@ -56,6 +78,13 @@ class IntegrationLogger {
       );
     }
     
+    if (this.deploymentMode === 'backend_only') {
+      console.log(
+        '%cBackend-only deployment mode enabled: optional ML services are not expected to be live yet',
+        'color: #03A9F4; font-style: italic;'
+      );
+    }
+
     // Show initial service summary after a short delay
     setTimeout(() => {
       this.getServiceSummary();
@@ -87,6 +116,12 @@ class IntegrationLogger {
 
   // Log service connection
   public logServiceConnection(service: string, connected: boolean, details?: any): void {
+    const visibleServices = this.getVisibleServices().map(item => item.name);
+    if (this.deploymentMode === 'backend_only' && !visibleServices.includes(service)) {
+      this.updateServiceStatus(service, connected);
+      return;
+    }
+
     const event: ServiceEvent = {
       timestamp: new Date(),
       service,
@@ -377,6 +412,10 @@ class IntegrationLogger {
       this.updateServiceStatus('Game WebSocket', gameWebSocketStatus);
       this.logServiceConnection('Game WebSocket', gameWebSocketStatus);
     }
+
+    if (this.deploymentMode === 'backend_only' && (statuses.backend !== undefined || Object.keys(statuses).length > 0)) {
+      this.updateServiceStatus('Game WebSocket', true);
+    }
     
     // Show updated service summary after processing all status updates
     this.getServiceSummary();
@@ -386,16 +425,10 @@ class IntegrationLogger {
   public getServiceSummary(): void {
     console.group('%c📊 Service Integration Summary', 'font-size: 16px; color: #2196F3; font-weight: bold;');
     
-    const services = [
-      { name: 'Backend API', status: this.serviceStatus.backend },
-      { name: 'ML Service', status: this.serviceStatus.ml },
-      { name: 'ML Inference', status: this.serviceStatus.inference },
-      { name: 'AI Coordination', status: this.serviceStatus.coordination },
-      { name: 'Continuous Learning', status: this.serviceStatus.learning },
-      { name: 'Python Trainer', status: this.serviceStatus.trainer },
-      { name: 'Integration WebSocket', status: this.serviceStatus.integration },
-      { name: 'Game WebSocket', status: this.serviceStatus.gameWebsocket }
-    ];
+    const services = this.getVisibleServices().map(service => ({
+      name: service.name,
+      status: this.serviceStatus[service.key]
+    }));
 
     const summary = services.map(s => ({
       Service: s.name,

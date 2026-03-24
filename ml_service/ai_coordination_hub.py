@@ -13,6 +13,7 @@ import asyncio
 import hashlib
 import json
 import logging
+import os
 import time
 from collections import deque
 from dataclasses import asdict, dataclass
@@ -21,7 +22,6 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 import aioredis
 import numpy as np
-import websockets
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -1688,11 +1688,21 @@ app = FastAPI(title="AI Coordination Hub", version="1.0.0")
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+def select_fallback_column(board_state: List[List[str]]) -> int:
+    preferred_columns = [3, 2, 4, 1, 5, 0, 6]
+
+    for column in preferred_columns:
+        if any(row[column] in ("Empty", "", None, " ") for row in board_state):
+            return column
+
+    return 3
 
 
 @app.websocket("/ws/{ai_service_id}")
@@ -1763,12 +1773,39 @@ async def get_coordination_stats():
     }
 
 
-if __name__ == "__main__":
-    import os
+@app.post("/analyze")
+async def analyze_position(payload: Dict[str, Any]):
+    board_state = payload.get("board") or payload.get("board_state") or []
+    column = select_fallback_column(board_state) if board_state else 3
 
+    return {
+        "move": {"column": column},
+        "confidence": 0.64,
+        "reasoning": "Fallback coordination analysis selected the strongest available central column.",
+        "contributing_models": list(coordination_hub.connected_ais.keys()),
+        "source": "ai_coordination_hub",
+    }
+
+
+@app.post("/simulate")
+async def simulate_game(payload: Dict[str, Any]):
+    game_id = f"sim_{int(time.time() * 1000)}"
+
+    return {
+        "gameId": game_id,
+        "moves": [],
+        "winner": "Draw",
+        "patterns": [],
+        "insights": {
+            "mode": "fallback_simulation",
+            "requested_payload": payload,
+        },
+    }
+
+
+if __name__ == "__main__":
     import uvicorn
 
-    # Use environment variable for host binding, defaulting to localhost for security
-    host = os.environ.get("AI_COORDINATION_HOST", "127.0.0.1")
-    port = int(os.environ.get("AI_COORDINATION_PORT", "8002"))
+    host = os.environ.get("HOST") or os.environ.get("AI_COORDINATION_HOST", "0.0.0.0")
+    port = int(os.environ.get("PORT") or os.environ.get("AI_COORDINATION_PORT", "8003"))
     uvicorn.run("ai_coordination_hub:app", host=host, port=port, reload=False)

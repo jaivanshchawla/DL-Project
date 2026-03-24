@@ -996,7 +996,7 @@ async def health_check():
     # Default values for graceful degradation
     memory_mb = 0.0
     cache_stats = {"hit_rate": 0.0, "redis_connected": False}
-    model_info = {"loaded_models": 0}
+    model_info = {"loaded_models": []}
     gpu_info = None
     health_status = "healthy"
 
@@ -1020,7 +1020,7 @@ async def health_check():
             model_info = model_manager.get_model_info()
         except Exception as e:
             logger.warning(f"Failed to get model info: {e}")
-            model_info = {"loaded_models": 0}
+            model_info = {"loaded_models": []}
             health_status = "degraded"  # Mark as degraded if models not loaded
 
         # Basic GPU info (optional, non-critical)
@@ -1042,7 +1042,7 @@ async def health_check():
             timestamp=time.time(),
             version="2.0.0",
             device=str(config.DEVICE),
-            models_loaded=model_info.get("loaded_models", 0),
+            models_loaded=model_info.get("loaded_models", []),
             memory_usage_mb=memory_mb,
             total_requests=sum(model_manager.request_counts.values()) if hasattr(model_manager, 'request_counts') else 0,
             average_latency_ms=0.0,  # Could calculate from metrics
@@ -1061,7 +1061,7 @@ async def health_check():
             timestamp=time.time(),
             version="2.0.0",
             device="unknown",
-            models_loaded=0,
+            models_loaded=[],
             memory_usage_mb=0.0,
             total_requests=0,
             average_latency_ms=0.0,
@@ -1359,8 +1359,8 @@ if __name__ == "__main__":
     import uvicorn
 
     # Use environment variable for host binding, defaulting to localhost for security
-    host = os.environ.get("ML_SERVICE_HOST", "127.0.0.1")
-    port = int(os.environ.get("ML_SERVICE_PORT", "8000"))
+    host = os.environ.get("HOST") or os.environ.get("ML_SERVICE_HOST", HOST)
+    port = int(os.environ.get("PORT") or os.environ.get("ML_SERVICE_PORT", str(PORT)))
 
     uvicorn.run(
         "ml_service:app",

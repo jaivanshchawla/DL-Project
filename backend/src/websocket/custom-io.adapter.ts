@@ -15,8 +15,7 @@ export class CustomIoAdapter extends IoAdapter {
     const corsOrigins = configService.get('corsOrigins') || [
       'http://localhost:3000',
       'http://localhost:3001',
-      'https://connect-four-ai-derek.vercel.app',
-      'https://connect-four-ai-roge.vercel.app',
+      'https://connect-four-ai-frontend.vercel.app',
       'https://*.vercel.app', // Allow all Vercel preview deployments
       'https://*.onrender.com', // Allow Render deployments
       '*' // Allow all origins temporarily for debugging

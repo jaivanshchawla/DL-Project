@@ -52,11 +52,95 @@ export class ServiceIntegrationOrchestrator implements OnModuleInit {
     private readonly configService: ConfigService,
   ) {}
 
+  private normalizeWsUrl(rawUrl: string | undefined, fallback: string, pathSuffix = ''): string {
+    const baseUrl = rawUrl?.trim() || fallback;
+
+    try {
+      const url = new URL(baseUrl);
+      url.protocol = url.protocol === 'https:' ? 'wss:' : url.protocol === 'http:' ? 'ws:' : url.protocol;
+
+      if ((!url.pathname || url.pathname === '/') && pathSuffix) {
+        url.pathname = pathSuffix;
+      }
+
+      return url.toString();
+    } catch {
+      return baseUrl;
+    }
+  }
+
+  private normalizeHttpBaseUrl(rawUrl: string | undefined, fallback: string): string {
+    const baseUrl = rawUrl?.trim() || fallback;
+
+    try {
+      const url = new URL(baseUrl);
+      url.protocol = url.protocol === 'wss:' ? 'https:' : url.protocol === 'ws:' ? 'http:' : url.protocol;
+      url.pathname = '';
+      url.search = '';
+      url.hash = '';
+      return url.toString().replace(/\/$/, '');
+    } catch {
+      return baseUrl.replace(/\/$/, '');
+    }
+  }
+
+  private buildHealthUrl(rawUrl: string | undefined, fallback: string): string {
+    return `${this.normalizeHttpBaseUrl(rawUrl, fallback)}/health`;
+  }
+
+  private getMLServiceBaseUrl(): string {
+    return this.normalizeHttpBaseUrl(
+      this.configService.get<string>('ML_SERVICE_URL') || this.configService.get<string>('mlServiceUrl'),
+      'http://localhost:8000',
+    );
+  }
+
+  private getContinuousLearningWsUrl(): string {
+    return this.normalizeWsUrl(
+      this.configService.get<string>('CONTINUOUS_LEARNING_WS_URL'),
+      'ws://localhost:8002/ws',
+      '/ws',
+    );
+  }
+
+  private getContinuousLearningHttpUrl(): string {
+    return this.normalizeHttpBaseUrl(
+      this.configService.get<string>('CONTINUOUS_LEARNING_WS_URL'),
+      'http://localhost:8002',
+    );
+  }
+
+  private getAICoordinationWsUrl(): string {
+    return this.normalizeWsUrl(
+      this.configService.get<string>('AI_COORDINATION_WS_URL'),
+      'ws://localhost:8003/ws/backend_orchestrator',
+      '/ws/backend_orchestrator',
+    );
+  }
+
+  private getAICoordinationHttpUrl(): string {
+    return this.normalizeHttpBaseUrl(
+      this.configService.get<string>('AI_COORDINATION_WS_URL'),
+      'http://localhost:8003',
+    );
+  }
+
+  private getPythonTrainerBaseUrl(): string {
+    return this.normalizeHttpBaseUrl(
+      this.configService.get<string>('PYTHON_TRAINER_URL'),
+      'http://localhost:8004',
+    );
+  }
+
   async onModuleInit() {
     this.logger.log('🚀 Initializing Service Integration Orchestrator...');
 
     // Check if services should be disabled
-    const disableExternalServices = this.configService.get('DISABLE_EXTERNAL_SERVICES', 'false') === 'true';
+    const isProduction = this.configService.get('NODE_ENV', process.env.NODE_ENV) === 'production';
+    const disableExternalServices = this.configService.get(
+      'DISABLE_EXTERNAL_SERVICES',
+      isProduction ? 'true' : 'false',
+    ) === 'true';
     
     if (disableExternalServices) {
       this.logger.log('📦 External services disabled by configuration');
@@ -151,21 +235,24 @@ export class ServiceIntegrationOrchestrator implements OnModuleInit {
    * Check ML Service health via HTTP
    */
   private async checkMLServiceHealth(): Promise<void> {
-    const mlServiceUrl = this.configService.get('ML_SERVICE_URL', 'http://localhost:8000');
+    const mlServiceUrl = this.getMLServiceBaseUrl();
     
     try {
       const response = await fetch(`${mlServiceUrl}/health`);
       if (response.ok) {
         this.serviceStatus.set('ml_service', true);
+        this.serviceStatus.set('ml_inference', true);
         this.logger.log('✅ ML Service is healthy');
         this.broadcastServiceStatus();
       } else {
         this.serviceStatus.set('ml_service', false);
+        this.serviceStatus.set('ml_inference', false);
         this.logger.warn('ML Service health check failed');
         this.broadcastServiceStatus();
       }
     } catch (error) {
       this.serviceStatus.set('ml_service', false);
+      this.serviceStatus.set('ml_inference', false);
       this.logger.error('Failed to check ML Service health:', error);
     }
     
@@ -179,7 +266,7 @@ export class ServiceIntegrationOrchestrator implements OnModuleInit {
    * Connect to Continuous Learning for real-time model updates
    */
   private async connectToContinuousLearning(): Promise<void> {
-    const clWsUrl = this.configService.get('CONTINUOUS_LEARNING_WS_URL', 'ws://localhost:8005');
+    const clWsUrl = this.getContinuousLearningWsUrl();
     
     try {
       this.continuousLearningWebSocket = new WebSocket(clWsUrl);
@@ -219,7 +306,7 @@ export class ServiceIntegrationOrchestrator implements OnModuleInit {
    * Connect to AI Coordination Hub for strategic decisions
    */
   private async connectToAICoordination(): Promise<void> {
-    const aiCoordUrl = this.configService.get('AI_COORDINATION_WS_URL', 'ws://localhost:8003/ws/backend_orchestrator');
+    const aiCoordUrl = this.getAICoordinationWsUrl();
     
     try {
       this.aiCoordinationWebSocket = new WebSocket(aiCoordUrl);
@@ -375,7 +462,7 @@ export class ServiceIntegrationOrchestrator implements OnModuleInit {
     try {
       // Call AI Coordination service to run simulation
       const response = await firstValueFrom(
-        this.httpService.post('http://localhost:8003/simulate', {
+        this.httpService.post(`${this.getAICoordinationHttpUrl()}/simulate`, {
           player1: {
             type: 'ai',
             difficulty: difficulty1,
@@ -526,7 +613,7 @@ export class ServiceIntegrationOrchestrator implements OnModuleInit {
     if (this.serviceStatus.get('ml_service')) {
       requests.push(
         firstValueFrom(
-          this.httpService.post('http://localhost:8000/predict', {
+          this.httpService.post(`${this.getMLServiceBaseUrl()}/predict`, {
             board: data.board,
             model_type: 'ensemble',
           })
@@ -538,7 +625,7 @@ export class ServiceIntegrationOrchestrator implements OnModuleInit {
     if (this.serviceStatus.get('ai_coordination')) {
       requests.push(
         firstValueFrom(
-          this.httpService.post('http://localhost:8003/analyze', {
+          this.httpService.post(`${this.getAICoordinationHttpUrl()}/analyze`, {
             board: data.board,
             gameState: data.gameState,
           })
@@ -687,11 +774,11 @@ export class ServiceIntegrationOrchestrator implements OnModuleInit {
     const services = [
       { name: 'backend', url: `${backendUrl}/api/health` },
       { name: 'frontend', url: this.configService.get('frontendUrl') || 'http://localhost:3001' },
-      { name: 'ml_service', url: this.configService.get('mlServiceUrl') ? `${this.configService.get('mlServiceUrl')}/health` : 'http://localhost:8000/health' },
-      { name: 'ml_inference', url: 'http://localhost:8001/health' },
-      { name: 'continuous_learning', url: 'http://localhost:8002/health' },
-      { name: 'ai_coordination', url: 'http://localhost:8003/health' },
-      { name: 'python_trainer', url: 'http://localhost:8004/health' },
+      { name: 'ml_service', url: this.buildHealthUrl(this.configService.get('ML_SERVICE_URL') || this.configService.get('mlServiceUrl'), 'http://localhost:8000') },
+      { name: 'ml_inference', url: this.buildHealthUrl(this.configService.get('ML_SERVICE_URL') || this.configService.get('mlServiceUrl'), 'http://localhost:8000') },
+      { name: 'continuous_learning', url: this.buildHealthUrl(this.getContinuousLearningHttpUrl(), 'http://localhost:8002') },
+      { name: 'ai_coordination', url: this.buildHealthUrl(this.getAICoordinationHttpUrl(), 'http://localhost:8003') },
+      { name: 'python_trainer', url: this.buildHealthUrl(this.getPythonTrainerBaseUrl(), 'http://localhost:8004') },
     ];
     
     this.logger.log('🔍 Checking health of all services...');
