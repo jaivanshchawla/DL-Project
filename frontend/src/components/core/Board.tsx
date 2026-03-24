@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { buildDiscGradient } from '../../utils/discColors';
 
 export type CellValue = 'Empty' | 'Red' | 'Yellow';
 
@@ -9,6 +10,11 @@ interface BoardProps {
   onDrop: (column: number) => void;
   /** Optional list of [row, col] pairs to highlight the winning line */
   winningLine?: [number, number][];
+  /** Visual color theme for logical Red and Yellow discs */
+  discTheme?: {
+    Red: { base: string; edge: string; glow: string; text: string };
+    Yellow: { base: string; edge: string; glow: string; text: string };
+  };
 }
 
 // Grid container style
@@ -41,11 +47,15 @@ const cellStyle: React.CSSProperties = {
 };
 
 // Disc style matching slot interior
-const discStyle = (color: 'red' | 'yellow'): React.CSSProperties => ({
+const discStyle = (
+  option: { base: string; edge: string; glow: string; text: string }
+): React.CSSProperties => ({
   width: '85%',
   height: '85%',
   borderRadius: '50%',
-  backgroundColor: color,
+  background: buildDiscGradient(option),
+  boxShadow: `inset 0 1px 3px rgba(255,255,255,0.42), 0 0 20px ${option.glow}`,
+  border: `1px solid ${option.edge}`,
   pointerEvents: 'none',
 });
 
@@ -53,7 +63,25 @@ const discStyle = (color: 'red' | 'yellow'): React.CSSProperties => ({
  * Board renders the 6×7 Connect Four grid and discs,
  * using local state synced from the `board` prop.
  */
-const Board: React.FC<BoardProps> = ({ board, onDrop, winningLine = [] }) => {
+const Board: React.FC<BoardProps> = ({
+  board,
+  onDrop,
+  winningLine = [],
+  discTheme = {
+    Red: {
+      base: '#ef4444',
+      edge: '#991b1b',
+      glow: 'rgba(239, 68, 68, 0.42)',
+      text: '#fee2e2'
+    },
+    Yellow: {
+      base: '#fbbf24',
+      edge: '#b45309',
+      glow: 'rgba(251, 191, 36, 0.42)',
+      text: '#fef3c7'
+    }
+  }
+}) => {
   // Local state for the board, initialized from props
   const [localBoard, setLocalBoard] = useState<CellValue[][]>(
     board ?? Array.from({ length: 6 }, () => Array(7).fill('Empty'))
@@ -142,7 +170,7 @@ const Board: React.FC<BoardProps> = ({ board, onDrop, winningLine = [] }) => {
                 {cell !== 'Empty' && (
                   <div
                     style={{
-                      ...discStyle(cell === 'Red' ? 'red' : 'yellow'),
+                      ...discStyle(cell === 'Red' ? discTheme.Red : discTheme.Yellow),
                       animation: [
                         dropCoord?.row === rowIndex && dropCoord?.col === colIndex ? 'drop 0.4s ease-out, spin 0.6s linear' : '',
                         bounceCoord?.row === rowIndex && bounceCoord?.col === colIndex ? 'bounce 0.4s ease-out' : ''

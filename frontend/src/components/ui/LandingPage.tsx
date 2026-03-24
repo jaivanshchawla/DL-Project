@@ -1,14 +1,26 @@
 import React, { useState, useEffect, useTransition } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getValidBoxShadowWithOpacity } from '../../utils/animationUtils';
+import DiscColorSelector from './DiscColorSelector';
 import Footer from './Footer';
+import {
+  buildDiscGradient,
+  getDiscColorOption,
+  type DiscColorSelection
+} from '../../utils/discColors';
 import './LandingPage.css';
 
 interface LandingPageProps {
   onStart: () => void;
+  discColors: DiscColorSelection;
+  onDiscColorsChange: (selection: DiscColorSelection) => void;
 }
 
-const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
+const LandingPage: React.FC<LandingPageProps> = ({
+  onStart,
+  discColors,
+  onDiscColorsChange
+}) => {
   const [isPending, startTransition] = useTransition();
   const [selectedDifficulty, setSelectedDifficulty] = useState(() => {
     const stored = localStorage.getItem('selectedDifficulty');
@@ -40,6 +52,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
   };
 
   const currentAI = getAIInfo(selectedDifficulty) || { name: 'Genesis', color: '#10b981', threat: 'ROOKIE', description: 'Perfect for beginners learning the ropes' };
+  const playerDisc = getDiscColorOption(discColors.player);
+  const aiDisc = getDiscColorOption(discColors.ai);
 
   const handleStartWithDifficulty = () => {
     localStorage.setItem('selectedDifficulty', selectedDifficulty.toString());
@@ -56,41 +70,41 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
     >
       {/* Enhanced background disc animations */}
       <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', overflow: 'hidden', zIndex: -1, pointerEvents: 'none' }}>
-        {/* Red discs */}
+        {/* Player discs */}
         <motion.div
-          style={{ position: 'absolute', width: 80, height: 80, borderRadius: '50%', backgroundColor: 'rgba(255,0,0,0.3)', boxShadow: '0 0 20px rgba(255,0,0,0.3)' }}
+          style={{ position: 'absolute', width: 80, height: 80, borderRadius: '50%', background: buildDiscGradient(playerDisc), boxShadow: `0 0 20px ${playerDisc.glow}` }}
           initial={{ x: '-100vw', y: '25vh' }}
           animate={{ x: '100vw', y: '25vh', scale: [1, 1.2, 1], rotate: [0, 360, 0] }}
           transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
         />
         <motion.div
-          style={{ position: 'absolute', width: 60, height: 60, borderRadius: '50%', backgroundColor: 'rgba(255,0,0,0.5)', boxShadow: '0 0 15px rgba(255,0,0,0.5)' }}
+          style={{ position: 'absolute', width: 60, height: 60, borderRadius: '50%', background: buildDiscGradient(playerDisc), boxShadow: `0 0 15px ${playerDisc.glow}` }}
           initial={{ x: '-100vw', y: '50vh' }}
           animate={{ x: '100vw', y: '50vh', scale: [1, 1.2, 1], rotate: [0, 360, 0] }}
           transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
         />
         <motion.div
-          style={{ position: 'absolute', width: 100, height: 100, borderRadius: '50%', backgroundColor: 'rgba(255,0,0,0.2)', boxShadow: '0 0 25px rgba(255,0,0,0.2)' }}
+          style={{ position: 'absolute', width: 100, height: 100, borderRadius: '50%', background: buildDiscGradient(playerDisc), boxShadow: `0 0 25px ${playerDisc.glow}` }}
           initial={{ x: '-100vw', y: '75vh' }}
           animate={{ x: '100vw', y: '75vh', scale: [1, 1.3, 1], rotate: [0, 360, 0] }}
           transition={{ duration: 8, repeat: Infinity, ease: 'linear', delay: 2 }}
         />
 
-        {/* Yellow discs */}
+        {/* AI discs */}
         <motion.div
-          style={{ position: 'absolute', width: 80, height: 80, borderRadius: '50%', backgroundColor: 'rgba(255,255,0,0.3)', boxShadow: '0 0 20px rgba(255,255,0,0.3)' }}
+          style={{ position: 'absolute', width: 80, height: 80, borderRadius: '50%', background: buildDiscGradient(aiDisc), boxShadow: `0 0 20px ${aiDisc.glow}` }}
           initial={{ x: '100vw', y: '35vh' }}
           animate={{ x: '-100vw', y: '35vh', scale: [1, 1.2, 1], rotate: [0, -360, 0] }}
           transition={{ duration: 5, repeat: Infinity, ease: 'linear', delay: 0.5 }}
         />
         <motion.div
-          style={{ position: 'absolute', width: 60, height: 60, borderRadius: '50%', backgroundColor: 'rgba(255,255,0,0.5)', boxShadow: '0 0 15px rgba(255,255,0,0.5)' }}
+          style={{ position: 'absolute', width: 60, height: 60, borderRadius: '50%', background: buildDiscGradient(aiDisc), boxShadow: `0 0 15px ${aiDisc.glow}` }}
           initial={{ x: '100vw', y: '55vh' }}
           animate={{ x: '-100vw', y: '55vh', scale: [1, 1.2, 1], rotate: [0, -360, 0] }}
           transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: 1.5 }}
         />
         <motion.div
-          style={{ position: 'absolute', width: 90, height: 90, borderRadius: '50%', backgroundColor: 'rgba(255,255,0,0.25)', boxShadow: '0 0 22px rgba(255,255,0,0.25)' }}
+          style={{ position: 'absolute', width: 90, height: 90, borderRadius: '50%', background: buildDiscGradient(aiDisc), boxShadow: `0 0 22px ${aiDisc.glow}` }}
           initial={{ x: '100vw', y: '15vh' }}
           animate={{ x: '-100vw', y: '15vh', scale: [1, 1.4, 1], rotate: [0, -360, 0] }}
           transition={{ duration: 7, repeat: Infinity, ease: 'linear', delay: 3 }}
@@ -114,10 +128,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.5, duration: 0.8 }}
         >
-          <div className="disc red disc-animation"></div>
-          <div className="disc yellow disc-animation delay-200"></div>
-          <div className="disc red disc-animation delay-400"></div>
-          <div className="disc yellow disc-animation delay-600"></div>
+          <div className="disc disc-animation" style={{ background: buildDiscGradient(playerDisc), boxShadow: `0 8px 32px ${playerDisc.glow}` }}></div>
+          <div className="disc disc-animation delay-200" style={{ background: buildDiscGradient(aiDisc), boxShadow: `0 8px 32px ${aiDisc.glow}` }}></div>
+          <div className="disc disc-animation delay-400" style={{ background: buildDiscGradient(playerDisc), boxShadow: `0 8px 32px ${playerDisc.glow}` }}></div>
+          <div className="disc disc-animation delay-600" style={{ background: buildDiscGradient(aiDisc), boxShadow: `0 8px 32px ${aiDisc.glow}` }}></div>
         </motion.div>
 
         <motion.p
@@ -154,6 +168,21 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
             </div>
           </div>
         </div>
+      </motion.div>
+
+      <motion.div
+        className="mt-6 px-4 w-full max-w-3xl z-10 relative"
+        initial={{ y: 90, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 1.05, duration: 0.7 }}
+      >
+        <DiscColorSelector
+          selection={discColors}
+          onChange={onDiscColorsChange}
+          variant="dark"
+          title="Disc Setup"
+          description="Pick your disc color and the AI disc color before the game begins."
+        />
       </motion.div>
 
       {/* Action Buttons */}
@@ -331,7 +360,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
                   <span className="text-2xl">🔴</span>
                   <div>
                     <div className="font-bold">Your Turn</div>
-                    <div className="opacity-80">You play as Red. Click on any column to drop your disc.</div>
+                    <div className="opacity-80">You play with your selected {playerDisc.name.toLowerCase()} disc. Click any column to drop it.</div>
                   </div>
                 </div>
 

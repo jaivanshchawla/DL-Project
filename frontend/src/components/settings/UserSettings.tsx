@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import settingsAPI from '../../api/settings';
+import DiscColorSelector from '../ui/DiscColorSelector';
+import {
+    DEFAULT_DISC_COLOR_SELECTION,
+    loadDiscColorSelection,
+    saveDiscColorSelection,
+    type DiscColorSelection
+} from '../../utils/discColors';
 import './UserSettings.css';
 
 // Simplified, focused settings structure
@@ -43,6 +50,7 @@ const UserSettings: React.FC<UserSettingsProps> = ({ playerId }) => {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+    const [discColors, setDiscColors] = useState<DiscColorSelection>(() => loadDiscColorSelection());
 
     useEffect(() => {
         loadSettings();
@@ -212,6 +220,13 @@ const UserSettings: React.FC<UserSettingsProps> = ({ playerId }) => {
         setTimeout(() => setMessage(null), 2000);
     };
 
+    const updateDiscColors = (selection: DiscColorSelection) => {
+        const normalized = saveDiscColorSelection(selection);
+        setDiscColors(normalized);
+        setMessage({ type: 'success', text: 'Disc colors updated' });
+        setTimeout(() => setMessage(null), 2000);
+    };
+
     const resetToDefaults = async () => {
         const defaults: UserSettingsState = {
             showHints: true,
@@ -226,6 +241,7 @@ const UserSettings: React.FC<UserSettingsProps> = ({ playerId }) => {
         };
         
         setSettings(defaults);
+        setDiscColors(saveDiscColorSelection(DEFAULT_DISC_COLOR_SELECTION));
         setMessage({ type: 'success', text: 'Settings reset to defaults' });
     };
 
@@ -340,6 +356,15 @@ const UserSettings: React.FC<UserSettingsProps> = ({ playerId }) => {
                                             <option value="minimal">Minimal</option>
                                         </select>
                                     </label>
+                                    <div className="disc-color-settings">
+                                        <DiscColorSelector
+                                            selection={discColors}
+                                            onChange={updateDiscColors}
+                                            variant="light"
+                                            title="Disc Colors"
+                                            description="Saved locally on this device and applied instantly during play."
+                                        />
+                                    </div>
                                 </div>
 
                                 <div className="setting-group">

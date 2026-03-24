@@ -3,6 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ThreatMeter from './ThreatMeter';
 import socket from '../../api/socket';
 import { integrationLogger } from '../../utils/integrationLogger';
+import {
+  buildDiscGradient,
+  getDiscColorOption,
+  type DiscColorSelection
+} from '../../utils/discColors';
 import './Sidebar.css';
 
 interface Move {
@@ -139,6 +144,7 @@ interface SidebarProps {
   onClose: () => void;
   aiLevel: number;
   aiJustLeveledUp: boolean;
+  discColors: DiscColorSelection;
   playerStats?: PlayerStats;
   currentAI?: {
     name: string;
@@ -155,9 +161,12 @@ const Sidebar: React.FC<SidebarProps> = ({
   onClose,
   aiLevel,
   aiJustLeveledUp,
+  discColors,
   playerStats,
   currentAI
 }) => {
+  const playerDisc = getDiscColorOption(discColors.player);
+  const aiDisc = getDiscColorOption(discColors.ai);
   const [activeSection, setActiveSection] = useState<SidebarSection>('overview');
   const [stats, setStats] = useState<PlayerStats>({
     wins: 0,
@@ -734,8 +743,14 @@ const Sidebar: React.FC<SidebarProps> = ({
                   <div className="move-header">
                     <div className="move-number-badge">#{move.moveNumber}</div>
                     <div className={`move-player ${move.player.toLowerCase()}`}>
-                      <span className="player-disc"></span>
-                      <span className="player-name">{move.player}</span>
+                      <span
+                        className="player-disc"
+                        style={{
+                          background: buildDiscGradient(move.player === 'Red' ? playerDisc : aiDisc),
+                          boxShadow: `0 0 10px ${move.player === 'Red' ? playerDisc.glow : aiDisc.glow}`
+                        }}
+                      ></span>
+                      <span className="player-name">{move.player === 'Red' ? 'You' : (currentAI?.name || 'AI')}</span>
                     </div>
                     <div className="move-time">
                       {formatTime(move.timestamp)}

@@ -298,6 +298,10 @@
     line-height: 1.5;
 }
 
+.disc-color-settings {
+    margin-top: 20px;
+}
+
 /* Save Indicator */
 .save-indicator {
     position: fixed;

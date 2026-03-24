@@ -32,6 +32,14 @@ import { appConfig, enterprise, ai, game, ui, dev, analytics } from './config/en
 import { integrationLogger } from './utils/integrationLogger';
 import { serviceHealthMonitor } from './utils/serviceHealthMonitor';
 import { cleanupService } from './services/cleanupService';
+import {
+  DISC_COLOR_EVENT,
+  buildDiscGradient,
+  getDiscColorOption,
+  loadDiscColorSelection,
+  saveDiscColorSelection,
+  type DiscColorSelection
+} from './utils/discColors';
 import type { CellValue, PlayerStats, AIPersonalityData } from './declarations';
 
 interface Move {
@@ -62,6 +70,7 @@ const App: React.FC = () => {
   const [isInitializing, setIsInitializing] = useState<boolean>(false);
   const [showLoadingPreferences, setShowLoadingPreferences] = useState<boolean>(false);
   const [appInitialized, setAppInitialized] = useState<boolean>(false);
+  const [discColors, setDiscColors] = useState<DiscColorSelection>(() => loadDiscColorSelection());
   const [loadingPreferences, setLoadingPreferences] = useState(() => {
     const saved = localStorage.getItem('loadingPreferences');
     return saved ? JSON.parse(saved) : {
@@ -337,6 +346,47 @@ const App: React.FC = () => {
 
   // Simple function to get current AI personality - no complex React patterns
   const getCurrentAI = () => getAIPersonality(aiLevel);
+  const playerDisc = getDiscColorOption(discColors.player);
+  const aiDisc = getDiscColorOption(discColors.ai);
+
+  const updateDiscColors = (selection: DiscColorSelection) => {
+    const normalized = saveDiscColorSelection(selection);
+    setDiscColors(normalized);
+  };
+
+  const getStatusDisplayText = (rawStatus: string): string => {
+    if (rawStatus === 'Your turn (Red)') {
+      return `Your turn • ${playerDisc.name} disc`;
+    }
+
+    if (rawStatus.startsWith('Red wins!')) {
+      return 'You win!';
+    }
+
+    if (rawStatus.startsWith('Yellow wins!')) {
+      return `${getCurrentAI().name} wins!`;
+    }
+
+    return rawStatus;
+  };
+
+  const displayStatus = getStatusDisplayText(status);
+
+  useEffect(() => {
+    const syncDiscColors = (event: Event) => {
+      const customEvent = event as CustomEvent<DiscColorSelection>;
+      if (customEvent.detail) {
+        setDiscColors(customEvent.detail);
+      } else {
+        setDiscColors(loadDiscColorSelection());
+      }
+    };
+
+    window.addEventListener(DISC_COLOR_EVENT, syncDiscColors as EventListener);
+    return () => {
+      window.removeEventListener(DISC_COLOR_EVENT, syncDiscColors as EventListener);
+    };
+  }, []);
 
   // Audio and haptic feedback setup
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -1610,6 +1660,8 @@ const App: React.FC = () => {
   if (!started) {
     return (
       <LandingPage
+        discColors={discColors}
+        onDiscColorsChange={updateDiscColors}
         onStart={() => {
           setStarted(true);
           handlePlayAgain();
@@ -1674,7 +1726,11 @@ const App: React.FC = () => {
       {/* Enhanced Landing Page with Loading Preferences */}
       {!started && (
         <div className="relative">
-          <LandingPage onStart={() => setStarted(true)} />
+          <LandingPage
+            discColors={discColors}
+            onDiscColorsChange={updateDiscColors}
+            onStart={() => setStarted(true)}
+          />
 
           {/* Loading Preferences Button */}
           <motion.button
@@ -1797,7 +1853,7 @@ const App: React.FC = () => {
         ) : (
           <div className="flex items-center justify-center gap-2">
             <div className="text-base md:text-xl font-semibold text-white bg-black bg-opacity-30 px-4 md:px-6 py-2 rounded-full">
-              {status}
+              {displayStatus}
             </div>
             {aiExplanation && (status.includes('wins!') || status.includes('AI')) && (
               <motion.button
@@ -1812,6 +1868,34 @@ const App: React.FC = () => {
             )}
           </div>
         )}
+        <div className="mt-3 flex items-center justify-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2 rounded-full border border-white/15 bg-black/20 px-3 py-2 text-sm text-white/90">
+            <span
+              style={{
+                width: 16,
+                height: 16,
+                borderRadius: '50%',
+                background: buildDiscGradient(playerDisc),
+                boxShadow: `0 0 12px ${playerDisc.glow}`
+              }}
+            />
+            <span className="font-semibold">You</span>
+            <span className="text-white/60">{playerDisc.name}</span>
+          </div>
+          <div className="flex items-center gap-2 rounded-full border border-white/15 bg-black/20 px-3 py-2 text-sm text-white/90">
+            <span
+              style={{
+                width: 16,
+                height: 16,
+                borderRadius: '50%',
+                background: buildDiscGradient(aiDisc),
+                boxShadow: `0 0 12px ${aiDisc.glow}`
+              }}
+            />
+            <span className="font-semibold">{getCurrentAI().name}</span>
+            <span className="text-white/60">{aiDisc.name}</span>
+          </div>
+        </div>
       </motion.div>
 
       {/* Floating AI Insights Button - Available during gameplay */}
@@ -1858,6 +1942,10 @@ const App: React.FC = () => {
         board={board}
         winningLine={winningLine}
         onDrop={onColumnClick}
+        discTheme={{
+          Red: playerDisc,
+          Yellow: aiDisc
+        }}
       />
 
       {/* Sidebar */}
@@ -1868,6 +1956,7 @@ const App: React.FC = () => {
             onClose={() => setSidebarOpen(false)}
             aiLevel={aiLevel}
             aiJustLeveledUp={aiJustLeveledUp}
+            discColors={discColors}
             playerStats={playerStats}
             currentAI={getCurrentAI()}
           />
