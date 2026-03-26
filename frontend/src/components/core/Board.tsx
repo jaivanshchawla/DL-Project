@@ -57,6 +57,8 @@ const discStyle = (
   boxShadow: `inset 0 1px 3px rgba(255,255,255,0.42), 0 0 20px ${option.glow}`,
   border: `1px solid ${option.edge}`,
   pointerEvents: 'none',
+  transform: 'translateZ(0)',
+  willChange: 'transform',
 });
 
 /**
@@ -92,6 +94,22 @@ const Board: React.FC<BoardProps> = ({
   const [hoveredCol, setHoveredCol] = useState<number | null>(null);
   const [dropCoord, setDropCoord] = useState<{ row: number; col: number } | null>(null);
   const [bounceCoord, setBounceCoord] = useState<{ row: number; col: number } | null>(null);
+  const hoverFrameRef = useRef<number | null>(null);
+  const dropTimeoutRef = useRef<number | null>(null);
+  const bounceStartTimeoutRef = useRef<number | null>(null);
+  const bounceTimeoutRef = useRef<number | null>(null);
+
+  const scheduleHoveredCol = (nextCol: number | null) => {
+    if (hoverFrameRef.current !== null) {
+      cancelAnimationFrame(hoverFrameRef.current);
+    }
+
+    hoverFrameRef.current = requestAnimationFrame(() => {
+      setHoveredCol((current) => (current === nextCol ? current : nextCol));
+      hoverFrameRef.current = null;
+    });
+  };
+
   useEffect(() => {
     if (!board) return;
     const prevBoard = prevBoardRef.current;
@@ -117,14 +135,36 @@ const Board: React.FC<BoardProps> = ({
     prevBoardRef.current = board;
     // Trigger drop animation
     setDropCoord({ row: targetRow, col });
-    // Clear drop after animation
-    setTimeout(() => setDropCoord(null), 400);
-    // Trigger bounce after drop animation
-    setTimeout(() => {
+    if (dropTimeoutRef.current) {
+      clearTimeout(dropTimeoutRef.current);
+    }
+    if (bounceStartTimeoutRef.current) {
+      clearTimeout(bounceStartTimeoutRef.current);
+    }
+    if (bounceTimeoutRef.current) {
+      clearTimeout(bounceTimeoutRef.current);
+    }
+    dropTimeoutRef.current = window.setTimeout(() => setDropCoord(null), 320);
+    bounceStartTimeoutRef.current = window.setTimeout(() => {
       setBounceCoord({ row: targetRow, col });
-      setTimeout(() => setBounceCoord(null), 400);
-    }, 400);
+      bounceTimeoutRef.current = window.setTimeout(() => setBounceCoord(null), 220);
+    }, 300);
   }, [board]);
+
+  useEffect(() => () => {
+    if (hoverFrameRef.current !== null) {
+      cancelAnimationFrame(hoverFrameRef.current);
+    }
+    if (dropTimeoutRef.current) {
+      clearTimeout(dropTimeoutRef.current);
+    }
+    if (bounceStartTimeoutRef.current) {
+      clearTimeout(bounceStartTimeoutRef.current);
+    }
+    if (bounceTimeoutRef.current) {
+      clearTimeout(bounceTimeoutRef.current);
+    }
+  }, []);
 
   const displayBoard = localBoard;
 
@@ -155,25 +195,28 @@ const Board: React.FC<BoardProps> = ({
                   ...cellStyle,
                   border: highlight ? '4px solid #06d6a0' : cellStyle.border,
                   background: displayBoard[rowIndex][colIndex] === 'Empty' && hoveredCol === colIndex ? 'rgba(255,255,255,0.2)' : cellStyle.background,
-                  transform: displayBoard[rowIndex][colIndex] === 'Empty' && hoveredCol === colIndex ? 'scale(1.05)' : 'scale(1)',
+                  transform: displayBoard[rowIndex][colIndex] === 'Empty' && hoveredCol === colIndex ? 'translateZ(0) scale(1.03)' : 'translateZ(0) scale(1)',
                   boxShadow: highlight
                     ? '0 0 8px 4px rgba(6,214,160,0.7)'
                     : 'none',
                   animation: highlight ? 'glow 1s ease-in-out infinite alternate' : 'none',
+                  willChange: 'transform',
                   cursor:
                     displayBoard[rowIndex][colIndex] === 'Empty'
                       ? 'pointer'
                       : 'default',
                 }}
-                onMouseEnter={() => setHoveredCol(colIndex)} onMouseLeave={() => setHoveredCol(null)} onClick={() => onDrop(colIndex)}
+                onMouseEnter={() => scheduleHoveredCol(colIndex)}
+                onMouseLeave={() => scheduleHoveredCol(null)}
+                onClick={() => onDrop(colIndex)}
               >
                 {cell !== 'Empty' && (
                   <div
                     style={{
                       ...discStyle(cell === 'Red' ? discTheme.Red : discTheme.Yellow),
                       animation: [
-                        dropCoord?.row === rowIndex && dropCoord?.col === colIndex ? 'drop 0.4s ease-out, spin 0.6s linear' : '',
-                        bounceCoord?.row === rowIndex && bounceCoord?.col === colIndex ? 'bounce 0.4s ease-out' : ''
+                        dropCoord?.row === rowIndex && dropCoord?.col === colIndex ? 'drop 0.32s cubic-bezier(0.22, 1, 0.36, 1)' : '',
+                        bounceCoord?.row === rowIndex && bounceCoord?.col === colIndex ? 'bounce 0.22s ease-out' : ''
                       ].filter(anim => anim).join(', '),
                     }}
                   />

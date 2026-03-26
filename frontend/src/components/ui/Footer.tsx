@@ -1,42 +1,42 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { HoverCard, Portal } from '@ark-ui/react';
 import './FooterHoverCard.css';
 
 const Footer: React.FC = () => {
+  const prefersReducedMotion = useReducedMotion();
+  const floatingIcons = ['⚛️', '🚀', '🎮'];
+
   return (
-    <motion.footer 
-      className="fixed bottom-0 left-0 right-0 bg-white bg-opacity-10 backdrop-blur-md py-4 px-8 border-t border-white border-opacity-20"
+    <motion.footer
+      className="fixed bottom-0 left-0 right-0 bg-white bg-opacity-10 backdrop-blur-md py-4 px-8 border-t border-white border-opacity-20 footer-shell"
       initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ delay: 0.5, duration: 0.8, ease: "easeOut" }}
+      transition={{ delay: 0.35, duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="flex items-center justify-center">
         <motion.div
-          className="flex items-center gap-3"
-          whileHover={{ scale: 1.05 }}
-          transition={{ type: "spring", stiffness: 400, damping: 10 }}
+          className="flex items-center gap-3 footer-content"
+          whileHover={prefersReducedMotion ? undefined : { scale: 1.02, y: -1 }}
+          transition={{ type: 'spring', stiffness: 240, damping: 24, mass: 0.8 }}
         >
-          {/* Animated code icon */}
           <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-            className="text-2xl"
+            className="text-2xl footer-glyph"
+            animate={prefersReducedMotion ? undefined : { rotate: [0, 8, -6, 0], y: [0, -2, 0] }}
+            transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
           >
-            💻
+            {'\u{1F4BB}'}
           </motion.div>
-          
-          {/* Main text with gradient */}
-          <motion.h3 
+
+          <motion.h3
             className="text-lg font-semibold text-white opacity-90"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.8, duration: 0.6 }}
+            transition={{ delay: 0.5, duration: 0.45 }}
           >
-            Built with ❤️ by
+            Built with {'\u2764\uFE0F'} by
           </motion.h3>
-          
-          {/* Name with profile hover card */}
+
           <HoverCard.Root openDelay={120} closeDelay={150} positioning={{ placement: 'top', gutter: 16 }}>
             <HoverCard.Trigger asChild>
               <motion.button
@@ -44,11 +44,8 @@ const Footer: React.FC = () => {
                 className="footer-profile-trigger text-xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent cursor-pointer no-underline"
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 1, duration: 0.5, type: "spring" }}
-                whileHover={{
-                  scale: 1.08,
-                  textShadow: "0 0 20px rgba(34, 211, 238, 0.4)",
-                }}
+                transition={{ delay: 0.65, duration: 0.45, type: 'spring', stiffness: 220, damping: 22 }}
+                whileHover={prefersReducedMotion ? undefined : { scale: 1.04, y: -1 }}
               >
                 Jaivansh Chawla
               </motion.button>
@@ -99,35 +96,27 @@ const Footer: React.FC = () => {
               </HoverCard.Positioner>
             </Portal>
           </HoverCard.Root>
-          
-          {/* Animated AI brain */}
+
           <motion.div
-            className="text-2xl"
-            animate={{ 
-              scale: [1, 1.2, 1],
-              filter: ["hue-rotate(0deg)", "hue-rotate(360deg)", "hue-rotate(0deg)"]
-            }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            className="text-2xl footer-glyph"
+            animate={prefersReducedMotion ? undefined : { scale: [1, 1.05, 1], y: [0, -3, 0] }}
+            transition={{ duration: 3.8, repeat: Infinity, ease: 'easeInOut' }}
           >
-            🦁
+            {'\u{1F9E0}'}
           </motion.div>
         </motion.div>
-        
-        {/* Floating tech icons */}
-        <div className="absolute right-8 flex gap-4">
-          {['⚛️', '🚀', '🎮', '🤖'].map((icon, index) => (
+
+        <div className="absolute right-8 hidden gap-4 md:flex">
+          {floatingIcons.map((icon, index) => (
             <motion.span
               key={icon}
-              className="text-lg opacity-40"
-              animate={{ 
-                y: [0, -10, 0],
-                rotate: [0, 10, -10, 0]
-              }}
-              transition={{ 
-                duration: 3,
-                delay: index * 0.2,
+              className="text-lg opacity-40 footer-tech-icon"
+              animate={prefersReducedMotion ? undefined : { y: [0, -6, 0], rotate: [0, 4, -4, 0] }}
+              transition={{
+                duration: 3.4,
+                delay: index * 0.28,
                 repeat: Infinity,
-                ease: "easeInOut"
+                ease: 'easeInOut'
               }}
             >
               {icon}
@@ -135,15 +124,14 @@ const Footer: React.FC = () => {
           ))}
         </div>
       </div>
-      
-      {/* Subtle copyright text */}
-      <motion.p 
+
+      <motion.p
         className="text-center text-xs text-white opacity-40 mt-2"
         initial={{ opacity: 0 }}
         animate={{ opacity: 0.4 }}
-        transition={{ delay: 1.5 }}
+        transition={{ delay: 0.85 }}
       >
-        © 2025 Connect Four AI - Enterprise Edition
+        {'\u00A9'} 2025 Connect Four AI - Enterprise Edition
       </motion.p>
     </motion.footer>
   );

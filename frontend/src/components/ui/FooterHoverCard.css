@@ -1,9 +1,28 @@
+.footer-shell {
+  transform: translateZ(0);
+  will-change: transform, opacity;
+  contain: layout style paint;
+}
+
+.footer-content {
+  will-change: transform;
+}
+
+.footer-glyph,
+.footer-tech-icon {
+  display: inline-flex;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
 .footer-profile-trigger {
   appearance: none;
   border: 0;
   background: transparent;
   padding: 0;
   line-height: 1;
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .footer-profile-trigger:focus-visible {
@@ -28,6 +47,8 @@
   backdrop-filter: blur(18px);
   overflow: hidden;
   z-index: 60;
+  transform: translateZ(0);
+  will-change: transform, opacity;
 }
 
 .footer-hover-card[data-state='open'] {
@@ -215,5 +236,17 @@
 
   .footer-hover-card-stats {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footer-shell,
+  .footer-content,
+  .footer-glyph,
+  .footer-tech-icon,
+  .footer-profile-trigger,
+  .footer-hover-card {
+    animation: none !important;
+    transition: none !important;
   }
 }

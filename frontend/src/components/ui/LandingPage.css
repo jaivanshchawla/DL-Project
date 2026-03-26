@@ -16,6 +16,7 @@
   isolation: isolate;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  will-change: background-position;
 }
 
 /* Subtle vignette and texture without extra markup */
@@ -57,10 +58,11 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: gradientBG 8s ease infinite, titleGlow 2s ease-in-out infinite alternate;
+  animation: gradientBG 10s ease infinite, titleGlow 3.6s ease-in-out infinite alternate;
   letter-spacing: 0.5px;
   text-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
-  filter: drop-shadow(0 0 16px rgba(255, 255, 255, 0.18));
+  filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.16));
+  will-change: transform, opacity;
 }
 
 @keyframes gradientBG {
@@ -104,7 +106,7 @@
 }
 
 .title-float {
-  animation: titleFloat 6s ease-in-out infinite;
+  animation: titleFloat 8s ease-in-out infinite;
 }
 
 @keyframes titleFloat {
@@ -133,6 +135,7 @@
   border-radius: 50%;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   animation: discFloat 3s ease-in-out infinite;
+  will-change: transform;
 }
 
 .disc.red {
@@ -146,7 +149,7 @@
 }
 
 .disc-animation {
-  animation: discFloat 3s ease-in-out infinite;
+  animation: discFloat 4.2s ease-in-out infinite;
 }
 
 .delay-200 {
@@ -206,7 +209,7 @@
   backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow: 0 24px 60px rgba(2, 6, 23, 0.35);
-  animation: aiDisplayGlow 4s ease-in-out infinite alternate;
+  animation: aiDisplayGlow 6s ease-in-out infinite alternate;
 }
 
 @keyframes aiDisplayGlow {
@@ -227,7 +230,8 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-  animation: avatarPulse 2s ease-in-out infinite;
+  animation: avatarPulse 3.2s ease-in-out infinite;
+  will-change: transform;
 }
 
 @keyframes avatarPulse {
@@ -250,7 +254,7 @@
   font-weight: bold;
   color: white;
   margin-top: 8px;
-  animation: badgeGlow 2s ease-in-out infinite alternate;
+  animation: badgeGlow 3s ease-in-out infinite alternate;
 }
 
 @keyframes badgeGlow {
@@ -283,13 +287,19 @@
   position: relative;
   overflow: hidden;
   box-shadow: 0 14px 36px rgba(0, 0, 0, 0.35);
-  transition: all 0.3s ease;
+  transition: transform 0.28s ease, box-shadow 0.28s ease, background-color 0.28s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
   text-transform: uppercase;
   letter-spacing: 1px;
+}
+
+.landing-ambient-disc {
+  transform: translateZ(0);
+  will-change: transform, opacity;
+  opacity: 0.18;
 }
 
 .primary-action-button::before {
@@ -342,7 +352,7 @@
   color: white;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: transform 0.24s ease, background-color 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -404,7 +414,7 @@
 
 .difficulty-option {
   backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
+  transition: transform 0.24s ease, background-color 0.24s ease, box-shadow 0.24s ease;
 }
 
 .difficulty-option:hover {

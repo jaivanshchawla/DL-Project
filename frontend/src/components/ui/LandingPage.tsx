@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useTransition } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { getValidBoxShadowWithOpacity } from '../../utils/animationUtils';
 import DiscColorSelector from './DiscColorSelector';
 import Footer from './Footer';
@@ -28,6 +28,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
   });
   const [showDifficultySelector, setShowDifficultySelector] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -54,6 +55,12 @@ const LandingPage: React.FC<LandingPageProps> = ({
   const currentAI = getAIInfo(selectedDifficulty) || { name: 'Genesis', color: '#10b981', threat: 'ROOKIE', description: 'Perfect for beginners learning the ropes' };
   const playerDisc = getDiscColorOption(discColors.player);
   const aiDisc = getDiscColorOption(discColors.ai);
+  const ambientDiscs = [
+    { key: 'player-top', disc: playerDisc, size: 80, top: '22vh', fromX: '-18vw', toX: '82vw', duration: 14, delay: 0 },
+    { key: 'player-bottom', disc: playerDisc, size: 96, top: '68vh', fromX: '-22vw', toX: '78vw', duration: 18, delay: 1.8 },
+    { key: 'ai-mid', disc: aiDisc, size: 72, top: '38vh', fromX: '82vw', toX: '-18vw', duration: 15, delay: 0.8 },
+    { key: 'ai-high', disc: aiDisc, size: 88, top: '12vh', fromX: '86vw', toX: '-16vw', duration: 20, delay: 2.4 }
+  ];
 
   const handleStartWithDifficulty = () => {
     localStorage.setItem('selectedDifficulty', selectedDifficulty.toString());
@@ -70,45 +77,33 @@ const LandingPage: React.FC<LandingPageProps> = ({
     >
       {/* Enhanced background disc animations */}
       <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', overflow: 'hidden', zIndex: -1, pointerEvents: 'none' }}>
-        {/* Player discs */}
-        <motion.div
-          style={{ position: 'absolute', width: 80, height: 80, borderRadius: '50%', background: buildDiscGradient(playerDisc), boxShadow: `0 0 20px ${playerDisc.glow}` }}
-          initial={{ x: '-100vw', y: '25vh' }}
-          animate={{ x: '100vw', y: '25vh', scale: [1, 1.2, 1], rotate: [0, 360, 0] }}
-          transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
-        />
-        <motion.div
-          style={{ position: 'absolute', width: 60, height: 60, borderRadius: '50%', background: buildDiscGradient(playerDisc), boxShadow: `0 0 15px ${playerDisc.glow}` }}
-          initial={{ x: '-100vw', y: '50vh' }}
-          animate={{ x: '100vw', y: '50vh', scale: [1, 1.2, 1], rotate: [0, 360, 0] }}
-          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-        />
-        <motion.div
-          style={{ position: 'absolute', width: 100, height: 100, borderRadius: '50%', background: buildDiscGradient(playerDisc), boxShadow: `0 0 25px ${playerDisc.glow}` }}
-          initial={{ x: '-100vw', y: '75vh' }}
-          animate={{ x: '100vw', y: '75vh', scale: [1, 1.3, 1], rotate: [0, 360, 0] }}
-          transition={{ duration: 8, repeat: Infinity, ease: 'linear', delay: 2 }}
-        />
-
-        {/* AI discs */}
-        <motion.div
-          style={{ position: 'absolute', width: 80, height: 80, borderRadius: '50%', background: buildDiscGradient(aiDisc), boxShadow: `0 0 20px ${aiDisc.glow}` }}
-          initial={{ x: '100vw', y: '35vh' }}
-          animate={{ x: '-100vw', y: '35vh', scale: [1, 1.2, 1], rotate: [0, -360, 0] }}
-          transition={{ duration: 5, repeat: Infinity, ease: 'linear', delay: 0.5 }}
-        />
-        <motion.div
-          style={{ position: 'absolute', width: 60, height: 60, borderRadius: '50%', background: buildDiscGradient(aiDisc), boxShadow: `0 0 15px ${aiDisc.glow}` }}
-          initial={{ x: '100vw', y: '55vh' }}
-          animate={{ x: '-100vw', y: '55vh', scale: [1, 1.2, 1], rotate: [0, -360, 0] }}
-          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: 1.5 }}
-        />
-        <motion.div
-          style={{ position: 'absolute', width: 90, height: 90, borderRadius: '50%', background: buildDiscGradient(aiDisc), boxShadow: `0 0 22px ${aiDisc.glow}` }}
-          initial={{ x: '100vw', y: '15vh' }}
-          animate={{ x: '-100vw', y: '15vh', scale: [1, 1.4, 1], rotate: [0, -360, 0] }}
-          transition={{ duration: 7, repeat: Infinity, ease: 'linear', delay: 3 }}
-        />
+        {ambientDiscs.map(({ key, disc, size, top, fromX, toX, duration, delay }) => (
+          <motion.div
+            key={key}
+            className="landing-ambient-disc"
+            style={{
+              position: 'absolute',
+              width: size,
+              height: size,
+              top,
+              borderRadius: '50%',
+              background: buildDiscGradient(disc),
+              boxShadow: `0 0 18px ${disc.glow}`
+            }}
+            initial={{ x: fromX, y: 0, opacity: 0 }}
+            animate={
+              prefersReducedMotion
+                ? { opacity: 0.14 }
+                : { x: toX, y: [0, -12, 0], opacity: [0.16, 0.22, 0.16] }
+            }
+            transition={{
+              duration: prefersReducedMotion ? 0.4 : duration,
+              repeat: prefersReducedMotion ? 0 : Infinity,
+              ease: 'linear',
+              delay
+            }}
+          />
+        ))}
       </div>
 
       {/* Main Title Section */}
@@ -199,7 +194,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
           onClick={handleStartWithDifficulty}
           initial={{ scale: 0, opacity: 0, boxShadow: '0 0 0px rgba(0,0,0,0)' }}
           animate={{ scale: 1, opacity: 1, boxShadow: '0 0 0px rgba(0,0,0,0)' }}
-          whileHover={{ scale: 1.05, boxShadow: getValidBoxShadowWithOpacity(currentAI.color || '#10b981') }}
+          whileHover={prefersReducedMotion ? undefined : { scale: 1.03, y: -2, boxShadow: getValidBoxShadowWithOpacity(currentAI.color || '#10b981') }}
           whileTap={{ scale: 0.95 }}
           onTap={() => navigator.vibrate?.(50)}
           transition={{ type: 'spring', stiffness: 300, delay: 1.4 }}
@@ -214,7 +209,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
           <motion.button
             className="secondary-action-button flex-1"
             onClick={() => startTransition(() => setShowDifficultySelector(true))}
-            whileHover={{ scale: 1.05 }}
+            whileHover={prefersReducedMotion ? undefined : { scale: 1.03, y: -1 }}
             whileTap={{ scale: 0.95 }}
             onTap={() => navigator.vibrate?.(30)}
             transition={{ type: 'spring', stiffness: 300 }}
@@ -226,7 +221,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
           <motion.button
             className="secondary-action-button flex-1"
             onClick={() => startTransition(() => setShowInfo(true))}
-            whileHover={{ scale: 1.05 }}
+            whileHover={prefersReducedMotion ? undefined : { scale: 1.03, y: -1 }}
             whileTap={{ scale: 0.95 }}
             onTap={() => navigator.vibrate?.(30)}
             transition={{ type: 'spring', stiffness: 300 }}
@@ -271,7 +266,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
                         }`}
                       onClick={() => setSelectedDifficulty(level)}
                       initial={{ scale: 1, boxShadow: '0 0 0px rgba(0,0,0,0)' }}
-                      whileHover={{ scale: 1.02, backgroundColor: 'rgba(255, 255, 255, 0.15)' }}
+                      whileHover={prefersReducedMotion ? undefined : { scale: 1.015, y: -2, backgroundColor: 'rgba(255, 255, 255, 0.15)' }}
                       whileTap={{ scale: 0.98 }}
                       style={isSelected ? { boxShadow: getValidBoxShadowWithOpacity(aiInfo.color, '#10b981', 0.5, '20px') } : { boxShadow: '0 0 0px rgba(0,0,0,0)' }}
                     >
@@ -307,7 +302,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
                 <motion.button
                   onClick={() => startTransition(() => setShowDifficultySelector(false))}
                   className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-xl font-bold transition-colors"
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={prefersReducedMotion ? undefined : { scale: 1.03, y: -1 }}
                   whileTap={{ scale: 0.95 }}
                 >
                   Cancel
@@ -320,7 +315,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
                   className="px-8 py-3 text-white rounded-xl font-bold transition-colors"
                   style={{ background: `linear-gradient(135deg, ${currentAI.color || '#10b981'}, #10b981)` }}
                   initial={{ boxShadow: '0 0 0px rgba(0,0,0,0)' }}
-                  whileHover={{ scale: 1.05, boxShadow: getValidBoxShadowWithOpacity(currentAI.color || '#10b981') }}
+                  whileHover={prefersReducedMotion ? undefined : { scale: 1.03, y: -1, boxShadow: getValidBoxShadowWithOpacity(currentAI.color || '#10b981') }}
                   whileTap={{ scale: 0.95 }}
                 >
                   Challenge {currentAI.name}
@@ -386,7 +381,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
               <motion.button
                 onClick={() => startTransition(() => setShowInfo(false))}
                 className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-xl font-bold transition-colors"
-                whileHover={{ scale: 1.02 }}
+                whileHover={prefersReducedMotion ? undefined : { scale: 1.01, y: -1 }}
                 whileTap={{ scale: 0.98 }}
               >
                 Got it! Let's Play
