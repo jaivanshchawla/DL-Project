@@ -299,7 +299,8 @@
 .landing-ambient-disc {
   transform: translateZ(0);
   will-change: transform, opacity;
-  opacity: 0.18;
+  opacity: 0.38;
+  filter: saturate(1.1);
 }
 
 .primary-action-button::before {

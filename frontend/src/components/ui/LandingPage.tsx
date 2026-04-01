@@ -56,10 +56,10 @@ const LandingPage: React.FC<LandingPageProps> = ({
   const playerDisc = getDiscColorOption(discColors.player);
   const aiDisc = getDiscColorOption(discColors.ai);
   const ambientDiscs = [
-    { key: 'player-top', disc: playerDisc, size: 80, top: '22vh', fromX: '-18vw', toX: '82vw', duration: 14, delay: 0 },
-    { key: 'player-bottom', disc: playerDisc, size: 96, top: '68vh', fromX: '-22vw', toX: '78vw', duration: 18, delay: 1.8 },
-    { key: 'ai-mid', disc: aiDisc, size: 72, top: '38vh', fromX: '82vw', toX: '-18vw', duration: 15, delay: 0.8 },
-    { key: 'ai-high', disc: aiDisc, size: 88, top: '12vh', fromX: '86vw', toX: '-16vw', duration: 20, delay: 2.4 }
+    { key: 'player-top', disc: playerDisc, size: 82, top: '22vh', fromX: '-16vw', toX: '84vw', duration: 6.4, delay: 0, drift: 18, glow: 26 },
+    { key: 'player-bottom', disc: playerDisc, size: 98, top: '68vh', fromX: '-20vw', toX: '80vw', duration: 8, delay: 0.8, drift: 20, glow: 30 },
+    { key: 'ai-mid', disc: aiDisc, size: 74, top: '38vh', fromX: '84vw', toX: '-16vw', duration: 6.7, delay: 0.35, drift: 16, glow: 26 },
+    { key: 'ai-high', disc: aiDisc, size: 90, top: '12vh', fromX: '88vw', toX: '-14vw', duration: 8.6, delay: 1.25, drift: 22, glow: 28 }
   ];
 
   const handleStartWithDifficulty = () => {
@@ -77,7 +77,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
     >
       {/* Enhanced background disc animations */}
       <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', overflow: 'hidden', zIndex: -1, pointerEvents: 'none' }}>
-        {ambientDiscs.map(({ key, disc, size, top, fromX, toX, duration, delay }) => (
+        {ambientDiscs.map(({ key, disc, size, top, fromX, toX, duration, delay, drift, glow }) => (
           <motion.div
             key={key}
             className="landing-ambient-disc"
@@ -88,13 +88,18 @@ const LandingPage: React.FC<LandingPageProps> = ({
               top,
               borderRadius: '50%',
               background: buildDiscGradient(disc),
-              boxShadow: `0 0 18px ${disc.glow}`
+              boxShadow: `0 0 ${glow}px ${disc.glow}`
             }}
             initial={{ x: fromX, y: 0, opacity: 0 }}
             animate={
               prefersReducedMotion
                 ? { opacity: 0.14 }
-                : { x: toX, y: [0, -12, 0], opacity: [0.16, 0.22, 0.16] }
+                : {
+                    x: toX,
+                    y: [0, -drift, 0],
+                    scale: [0.99, 1.07, 0.99],
+                    opacity: [0.34, 0.56, 0.34]
+                  }
             }
             transition={{
               duration: prefersReducedMotion ? 0.4 : duration,
