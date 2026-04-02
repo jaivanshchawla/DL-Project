@@ -58,7 +58,7 @@ class IntegrationLogger {
 
     if (this.deploymentMode === 'backend_only') {
       return allServices.filter(service =>
-        service.key === 'backend' || service.key === 'gameWebsocket'
+        service.key === 'backend' || service.key === 'ml' || service.key === 'gameWebsocket'
       );
     }
 
@@ -80,7 +80,7 @@ class IntegrationLogger {
     
     if (this.deploymentMode === 'backend_only') {
       console.log(
-        '%cBackend-only deployment mode enabled: optional ML services are not expected to be live yet',
+        '%cBackend-only deployment mode enabled: showing currently deployed core services',
         'color: #03A9F4; font-style: italic;'
       );
     }
