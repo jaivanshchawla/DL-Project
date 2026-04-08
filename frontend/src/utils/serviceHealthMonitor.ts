@@ -26,7 +26,7 @@ class ServiceHealthMonitor {
     try {
       const env = this.environmentInfo;
       if (env.isProduction) {
-        return this.deploymentMode === 'backend_only' ? 20000 : 10000;
+        return this.deploymentMode === 'backend_only' ? 20000 : 20000;
       }
       return 5000;
     } catch {
@@ -163,7 +163,7 @@ class ServiceHealthMonitor {
     console.log(`🚀 Starting service health monitoring in ${this.environmentInfo.type} environment...`);
     this.isMonitoring = true;
     const initialDelayMs = this.environmentInfo.isProduction ? 15000 : 0;
-    const checkIntervalMs = this.environmentInfo.isProduction ? 60000 : 30000;
+    const checkIntervalMs = this.environmentInfo.isProduction ? 90000 : 30000;
 
     if (initialDelayMs > 0) {
       setTimeout(() => {

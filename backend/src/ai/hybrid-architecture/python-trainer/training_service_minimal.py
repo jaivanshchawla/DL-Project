@@ -25,7 +25,12 @@ app = FastAPI(title="Connect Four AI Training Service (Minimal)")
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "https://connect-four-ai-frontend.vercel.app",
+        "https://connect-four-ai-backend.onrender.com",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -83,6 +83,11 @@ class IntegrationLogger {
         '%cBackend-only deployment mode enabled: showing currently deployed core services',
         'color: #03A9F4; font-style: italic;'
       );
+    } else {
+      console.log(
+        '%cFull deployment mode enabled: monitoring all live AI services',
+        'color: #4CAF50; font-style: italic;'
+      );
     }
 
     // Show initial service summary after a short delay

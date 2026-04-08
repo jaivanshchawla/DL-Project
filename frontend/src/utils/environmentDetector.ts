@@ -36,6 +36,7 @@ export interface ServiceConfiguration {
 class EnvironmentDetector {
   private static instance: EnvironmentDetector;
   private environmentInfo: EnvironmentInfo | null = null;
+  private readonly deploymentMode = process.env.REACT_APP_DEPLOYMENT_MODE || 'full';
   
   // Service endpoint configurations
   private readonly serviceEndpoints: Record<string, ServiceEndpoint> = {
@@ -224,14 +225,12 @@ class EnvironmentDetector {
     const env = this.getEnvironmentInfo();
     const config = this.getServiceConfiguration();
 
-    // In production, only check main backend health
-    if (env.isProduction) {
+    if (env.isProduction && this.deploymentMode === 'backend_only') {
       return [
         { name: 'Backend API', url: `${config.backend}/api/health` }
       ];
     }
 
-    // In local/dev, check all services
     return [
       { name: 'Backend API', url: `${config.backend}/api/health` },
       { name: 'ML Service', url: `${config.mlService}/health` },
