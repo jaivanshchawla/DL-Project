@@ -20,7 +20,6 @@ from dataclasses import asdict, dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-import aioredis
 import numpy as np
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
