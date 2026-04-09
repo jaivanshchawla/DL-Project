@@ -4948,7 +4948,7 @@ while (running) {
 ```
 
 ### **8. OpeningBook**
-Professional-grade opening move database.
+Professional-grade opening mojaivanshchawla
 
 **Database Contents:**
 - 50,000+ analyzed positions
@@ -5499,11 +5499,11 @@ GET    /api/stats/global       // Global statistics
 GET    /api/stats/leaderboard  // Top players
 ```
 
-### **WebSocket Events**
-```typescript
-// Client -> Server
+### **WebSockeJaivansh Chawla
+- **GitHub:** [@jaivanshchawla](https://github.com/jaivanshchawla)
+- **Repository:** [Connect-Four-AI](https://github.com/jaivanshchawla
 socket.emit('joinGame', { gameId, playerId });
-socket.emit('makeMove', { column, gameId });
+socket.emit('makeMove', { column, gameId });jaivanshchawla
 socket.emit('requestHint', { gameId });
 socket.emit('forfeit', { gameId });
 
@@ -5521,7 +5521,7 @@ socket.on('gameOver', (result) => {});
 ### **Supported Browsers**
 - Chrome 90+ (Best performance)
 - Firefox 88+ (Good performance)
-- Safari 14+ (WebGPU experimental)
+- Safari 14+ (WebGPU experJaivansh Chawla
 - Edge 90+ (Chromium-based)
 
 ### **Progressive Enhancement**
