@@ -4596,7 +4596,7 @@
 
 # Connect-Four-AI 🧠 | Enterprise AI Research Platform
 
-![Author: Derek J. Russell](https://img.shields.io/badge/Author-Derek%20J.%20Russell-blue) 
+![Author: Jaivansh Chawla](https://img.shields.io/badge/Author-Jaivansh%20Chawla-blue) 
 ![Node.js](https://img.shields.io/badge/node.js-≥18.0-blue) 
 ![Python](https://img.shields.io/badge/python-≥3.9-yellow) 
 ![AI](https://img.shields.io/badge/AI-30%2B%20Advanced%20Algorithms-purple) 
