@@ -1,5 +1,6 @@
 [![Service Health](https://img.shields.io/badge/Service%20Health-Degraded-yellow)](https://github.com/jaivanshchawla/DL-Project/actions/workflows/health-monitoring.yml)
 
+
 ﻿**[📖 Documentation](README.md)** · [🗞️ Newspaper](NEWSPAPER.md)
 
 ---
