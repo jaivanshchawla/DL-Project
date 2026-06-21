@@ -21,7 +21,7 @@ aioredis>=2.0.1
 
 # Async and performance
 aiofiles==23.2.1
-asyncio==3.4.3
+asyncio==4.0.0
 
 # Environment and configuration
 python-dotenv==1.0.0
