@@ -1,4 +1,5 @@
-[![Service Health](https://img.shields.io/badge/Service%20Health-Degraded-yellow)](https://github.com/jaivanshchawla/DL-Project/actions/workflows/health-monitoring.yml)
+[![Service Health](https://img.shields.io/badge/Service%20Health-Operational-green)](https://github.com/jaivanshchawla/DL-Project/actions/workflows/health-monitoring.yml)
+
 
 
 
