@@ -1,6 +1,6 @@
 # Production Requirements for ML Services
 # Core dependencies
-fastapi==0.104.1
+fastapi==0.135.3
 uvicorn[standard]==0.24.0
 gunicorn>=23.0.0
 pydantic==2.4.2
